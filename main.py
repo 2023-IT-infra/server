@@ -1,24 +1,27 @@
 from typing import Union
-from fastapi import FastAPI, Depends, Path, HTTPException
-from pydantic import BaseModel
-from database import engineconn
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from database import SessionLocal
 from models import address
+from middleware import DBSessionMiddleware
 
 app = FastAPI()
-
-engine = engineconn()
-session = engine.create_session()
+app.add_middleware(DBSessionMiddleware)
 
 
-class Item(BaseModel):
-    MAC: str
-
+# 의존성
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
-async def first_get():
-    return session.query(address).all()
+def read_root():
+    return {"Hello": "MAC Address Server"}
 
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/devices")
+async def get_device(db: Session = Depends(get_db)):
+    devices = db.query(address).all()
+    return devices
