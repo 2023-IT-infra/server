@@ -9,3 +9,4 @@ class address(Base):
 
     id = Column(BIGINT, nullable=False, autoincrement=True, primary_key=True)
     MAC = Column(TEXT, nullable=False)
+    txPower = Column(INT, nullable=False)

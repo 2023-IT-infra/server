@@ -17,11 +17,13 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "MAC Address Server"}
 
 @app.get("/devices")
 async def get_device(db: Session = Depends(get_db)):
     devices = db.query(address).all()
     return devices
+
+
+@app.get("/test")
+async def test():
+    return {"message": "Hello World"}
