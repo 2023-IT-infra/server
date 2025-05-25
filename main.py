@@ -1,29 +1,21 @@
-from typing import Union
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import address
-from middleware import DBSessionMiddleware
+from fastapi import FastAPI
+
+from router import api_router, auth_router, v0_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-app.add_middleware(DBSessionMiddleware)
+
+# CORS middleware 추가
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 특정 origin만 허용하려면 명시적으로 설정. 예: ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],  # 또는 특정 메서드 ["GET", "POST", "OPTIONS"]
+    allow_headers=["*"],
+)
 
 
-# 의존성
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+app.include_router(api_router)
+app.include_router(auth_router)
 
-
-@app.get("/devices")
-async def get_device(db: Session = Depends(get_db)):
-    devices = db.query(address).all()
-    return devices
-
-
-@app.get("/test")
-async def test():
-    return {"message": "Hello World"}
+app.include_router(v0_router)
