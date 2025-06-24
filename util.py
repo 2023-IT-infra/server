@@ -1,11 +1,18 @@
-import meilisearch
 import json
+
+import meilisearch
+from fastapi.encoders import jsonable_encoder
 
 client = meilisearch.Client('http://localhost:7700', 'aSampleMasterKey')
 
 async def write_json_to_file(data: dict) -> None:
     with open('device_list.json', 'w', encoding='utf-8') as json_file:
-        json_file.write(json.dumps(data))
+        json_file.write(json.dumps(jsonable_encoder(data)))
+
+
+def _encode_document(document: dict) -> dict:
+    """Return a version of the document safe for JSON serialization."""
+    return jsonable_encoder(document)
 
 async def get_meilisearch(term: str) -> list[dict]:
     # Search for documents in the index
@@ -22,8 +29,25 @@ async def get_meilisearch(term: str) -> list[dict]:
     return documents_list
 
 def add_document_to_meilisearch(document: dict):
-    # Create a new index
+    """Add a single document to the devices index."""
     index = client.index('devices')
+    index.add_documents([_encode_document(document)])
 
-    # Add a document to the index
-    index.add_documents([document])
+
+def update_document_in_meilisearch(document: dict):
+    """Update a document in the devices index."""
+    index = client.index('devices')
+    index.add_documents([_encode_document(document)])
+
+
+def delete_document_from_meilisearch(document_id: int):
+    """Delete a document from the devices index."""
+    index = client.index('devices')
+    index.delete_document(str(document_id))
+
+
+def index_bulk_devices(documents: list[dict]):
+    """Add multiple documents to the devices index."""
+    index = client.index('devices')
+    index.add_documents([_encode_document(d) for d in documents])
+
