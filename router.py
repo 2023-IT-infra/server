@@ -43,6 +43,20 @@ async def get_device(
 ):
     return find_all_devices(session)
 
+
+@api_router.get("/user/devices/search", response_model=list[DevicePublic])
+async def search_devices(
+    q: str,
+    current_user: Annotated[
+        User,
+        Depends(
+            get_current_active_user
+        )],
+    session: Annotated[SessionDep, Depends(get_session)]
+):
+    results = await service.search_devices(q)
+    return [DevicePublic(**res) for res in results]
+
 @api_router.get("/user/devices/{device_id}",response_model=DevicePublic)
 async def get_device(
     device_id: int,
