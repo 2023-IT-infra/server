@@ -32,6 +32,7 @@ async def search_devices(term: str, session: Session) -> Sequence[Device]:
     device_map = {d.id: d for d in devices}
     return [device_map[i] for i in ids if i in device_map]
 
+
 def find_user_by_email(email: str, session: Session) -> User | None:
     statement: Select = select(User).where(User.email == email)
     return session.exec(statement).first()
