@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
 import service
+from util import get_meilisearch
 from auth import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, get_current_active_user, \
     verify_password, get_password_hash
 from database import SessionDep, get_session
@@ -42,6 +43,20 @@ async def get_device(
     session: Annotated[SessionDep, Depends(get_session)]
 ):
     return find_all_devices(session)
+
+
+@api_router.get("/user/devices/search", response_model=list[DevicePublic])
+async def search_devices(
+    q: str,
+    current_user: Annotated[
+        User,
+        Depends(
+            get_current_active_user
+        )],
+    session: Annotated[SessionDep, Depends(get_session)]
+):
+    results = await get_meilisearch(q)
+    return [DevicePublic(**res) for res in results]
 
 @api_router.get("/user/devices/{device_id}",response_model=DevicePublic)
 async def get_device(

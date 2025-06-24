@@ -2,6 +2,12 @@ from datetime import datetime
 from tkinter.tix import Select
 from typing import Sequence, Type
 
+from util import (
+    add_document_to_meilisearch,
+    update_document_in_meilisearch,
+    delete_document_from_meilisearch,
+)
+
 from sqlmodel import Session, select
 
 from models import Device, User, DevicePublic, DeviceCreate
@@ -32,12 +38,17 @@ def update_device_by_id(device_id: int, device: DevicePublic, session: Session) 
     session.add(db_device)
     session.commit()
     session.refresh(db_device)
+
+    update_document_in_meilisearch(db_device.dict())
+
     return db_device
 
 def delete_device_by_id(device_id: int, session: Session) -> None:
     device = session.get(Device, device_id)
     session.delete(device)
     session.commit()
+
+    delete_document_from_meilisearch(device_id)
     return None
 
 def create_device(device: DeviceCreate, session: Session) -> Device:
@@ -46,6 +57,9 @@ def create_device(device: DeviceCreate, session: Session) -> Device:
     session.add(db_device)
     session.commit()
     session.refresh(db_device)
+
+    add_document_to_meilisearch(db_device.dict())
+
     return db_device
 
 def update_user(user: User, session: Session) -> Type[User] | None:
