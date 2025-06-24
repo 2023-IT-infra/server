@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+from sqlmodel import Session
 
 from router import api_router, auth_router, v0_router
 from fastapi.middleware.cors import CORSMiddleware
+from database import engine
+import service
+from util import index_bulk_devices
 
 app = FastAPI()
 
@@ -19,3 +23,13 @@ app.include_router(api_router)
 app.include_router(auth_router)
 
 app.include_router(v0_router)
+
+
+@app.on_event("startup")
+def init_search_index() -> None:
+    """Synchronize Meilisearch with existing devices on startup."""
+    with Session(engine) as session:
+        devices = service.find_all_devices(session)
+        if devices:
+            index_bulk_devices([d.dict() for d in devices])
+
