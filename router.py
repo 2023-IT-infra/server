@@ -54,8 +54,7 @@ async def search_devices(
         )],
     session: Annotated[SessionDep, Depends(get_session)]
 ):
-    results = await service.search_devices(q)
-    return [DevicePublic(**res) for res in results]
+    return await service.search_devices(q, session)
 
 @api_router.get("/user/devices/{device_id}",response_model=DevicePublic)
 async def get_device(
