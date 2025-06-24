@@ -20,9 +20,18 @@ def find_all_devices(session: Session) -> Sequence[Device]:
 def load_test_message() -> dict[str, str]:
     return {"message": "Hello World"}
 
-async def search_devices(term: str) -> list[dict]:
-    """Search devices from Meilisearch by term."""
-    return await get_meilisearch(term)
+async def search_devices(term: str, session: Session) -> Sequence[Device]:
+    """Search devices from Meilisearch by term and return matching DB records."""
+    results = await get_meilisearch(term)
+    ids = [r.get("id") for r in results if "id" in r]
+    if not ids:
+        return []
+    statement: Select = select(Device).where(Device.id.in_(ids))
+    devices = session.exec(statement).all()
+    # Preserve the order of the search hits
+    device_map = {d.id: d for d in devices}
+    return [device_map[i] for i in ids if i in device_map]
+
 
 def find_user_by_email(email: str, session: Session) -> User | None:
     statement: Select = select(User).where(User.email == email)
