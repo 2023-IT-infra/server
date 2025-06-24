@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, APIRouter, BackgroundTasks
+from fastapi import Depends, HTTPException, APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
@@ -12,7 +12,6 @@ from database import SessionDep, get_session
 from models import User, UserPublic, DevicePublic, DeviceRead, DeviceUpdate, DeviceCreate
 from schemas import Token, PasswordChange
 from service import find_all_devices, load_test_message, find_by_device_id
-from util import add_document_to_meilisearch
 
 api_router = APIRouter(
     prefix="/api/v1",
@@ -27,8 +26,10 @@ v0_router = APIRouter()
 async def get_device(
     session: Annotated[SessionDep, Depends(get_session)]
 ):
+    devices = filter(lambda device: device.status, find_all_devices(session))
+
     return [ {"id": d.id, "MAC": d.mac, "txPower": d.tx_power}
-             for d in filter(lambda device: device.status, find_all_devices(session))
+             for d in devices
             ]
 
 @api_router.get("/user/devices",response_model=list[DevicePublic])
@@ -63,12 +64,9 @@ async def update_device(
         Depends(
             get_current_active_user
         )],
-    session: Annotated[SessionDep, Depends(get_session)],
-    background_tasks: BackgroundTasks
+    session: Annotated[SessionDep, Depends(get_session)]
 ):
-    result = service.update_device_by_id(device_id, res, session)
-    background_tasks.add_task(add_document_to_meilisearch, result)
-    return result
+    return service.update_device_by_id(device_id, res, session)
 
 @api_router.post("/user/devices",response_model=DevicePublic)
 async def create_device(

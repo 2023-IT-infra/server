@@ -27,13 +27,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 pwd_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-async def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-async def get_password_hash(password):
+def get_password_hash(password):
     return pwd_context.hash(password)
 
-async def authenticate_user(email: str, password: str, session: Session):
+def authenticate_user(email: str, password: str, session: Session):
     user = find_user_by_email(email, session)
     if not user:
         return False
@@ -41,8 +41,7 @@ async def authenticate_user(email: str, password: str, session: Session):
         return False
     return user
 
-
-async def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta

@@ -6,20 +6,21 @@ from sqlmodel import Session, select
 
 from models import Device, User, DevicePublic, DeviceCreate
 
-async def find_all_devices(session: Session) -> Sequence[Device]:
+
+def find_all_devices(session: Session) -> Sequence[Device]:
     return session.exec(select(Device)).all()
 
-async def load_test_message() -> dict[str, str]:
+def load_test_message() -> dict[str, str]:
     return {"message": "Hello World"}
 
-async def find_user_by_email(email: str, session: Session) -> User | None:
+def find_user_by_email(email: str, session: Session) -> User | None:
     statement: Select= select(User).where(User.email == email)
     return session.exec(statement).first()
 
-async def find_by_device_id(device_id: int, session: Session) -> Device | None:
+def find_by_device_id(device_id: int, session: Session) -> Device | None:
     return session.get(Device, device_id)
 
-async def update_device_by_id(device_id: int, device: DevicePublic, session: Session) -> Type[Device] | None:
+def update_device_by_id(device_id: int, device: DevicePublic, session: Session) -> Type[Device] | None:
     db_device = session.get(Device, device_id)
     if db_device is None:
         return None
@@ -33,13 +34,13 @@ async def update_device_by_id(device_id: int, device: DevicePublic, session: Ses
     session.refresh(db_device)
     return db_device
 
-async def delete_device_by_id(device_id: int, session: Session) -> None:
+def delete_device_by_id(device_id: int, session: Session) -> None:
     device = session.get(Device, device_id)
     session.delete(device)
     session.commit()
     return None
 
-async def create_device(device: DeviceCreate, session: Session) -> Device:
+def create_device(device: DeviceCreate, session: Session) -> Device:
     db_device = Device(**device.dict())
     db_device.add_date = datetime.now()
     session.add(db_device)
@@ -47,7 +48,7 @@ async def create_device(device: DeviceCreate, session: Session) -> Device:
     session.refresh(db_device)
     return db_device
 
-async def update_user(user: User, session: Session) -> Type[User] | None:
+def update_user(user: User, session: Session) -> Type[User] | None:
     db_user = session.get(User, user.id)
     if db_user is None:
         return None
@@ -59,7 +60,7 @@ async def update_user(user: User, session: Session) -> Type[User] | None:
     session.refresh(db_user)
     return db_user
 
-async def update_user_password(user: User, session: Session) -> Type[User] | None:
+def update_user_password(user: User, session: Session) -> Type[User] | None:
     db_user = session.get(User, user.id)
     if db_user is None:
         return None
