@@ -3,11 +3,17 @@ import os
 
 import meilisearch
 from fastapi.encoders import jsonable_encoder
+import dotenv
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
 
 MEILI_URL = os.getenv("MEILI_URL")
 MEILI_MASTER_KEY = os.getenv("MEILI_MASTER_KEY")
 
-client = meilisearch.Client(MEILI_URL, MEILI_MASTER_KEY)
+print("URL : ", MEILI_URL, MEILI_MASTER_KEY)
+
+client = meilisearch.Client(url=MEILI_URL, api_key=MEILI_MASTER_KEY)
 
 async def write_json_to_file(data: dict) -> None:
     with open('device_list.json', 'w', encoding='utf-8') as json_file:
