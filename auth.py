@@ -20,8 +20,8 @@ import os
 # 시크릿 변수를 불러온다.
 dotenv.load_dotenv("/.env")
 
-SECRET_KEY =os.getenv("SECRET_KEY")
-ALGORITHM =os.getenv("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 pwd_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
